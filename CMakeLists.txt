@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 project( medusa )
 find_package ( OpenCV REQUIRED )
-add_executable ( medusa medusa.cpp helper.cpp )
+add_executable ( medusa src/medusa.cpp src/helper.cpp )
 target_link_libraries( medusa ${OpenCV_LIBS} m )
