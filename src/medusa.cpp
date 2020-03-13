@@ -1,39 +1,39 @@
 #include <iostream>
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include <string.h>
-#include "helper.h"
 #include <vector>
 
-std::string getFileName(int argc, char** argv) {
-    std::string fileName;
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
-    if (argc == 1) {
-        printf("[Medusa] Medusa is a program which turns your images into text files or images filled with characters.\n");
-        exit(1);
-    } else if (argc != 2) {
-        printf("[Medusa] You have provided insufficient information. Medusa accepts one argument, the name of your image.\n");
-        exit(1);
-    } else {
-        fileName = argv[1];
+#include "cxxopts.hpp"
+#include "helper.h"
 
-        if (fileExists(fileName)) {
-            return fileName;
-        } else {
-            printf("[Medusa] The file %s does not exist!\n", fileName.c_str());
-            exit(1);
-        }
-    }
-}
 
 int main(int argc, char** argv) {
-    std::string fileName = getFileName(argc, argv);	// The name of the file that the user has provided.
-    cv::Mat image = cv::imread(fileName, cv::IMREAD_COLOR);
+	cxxopts::Options arguments("Medusa", "Medusa turns images into ASCII filled texts.");
 
-    resize(&image);
+	// Parsing the arguments provided by the user.
+	arguments.add_options()
+		("f, file", "File Name", cxxopts::value<std::string>())
+		("w, width", "Image Width", cxxopts::value<int>()->default_value("100"));
+	auto result = arguments.parse(argc, argv);
+	
+	// Obtaining the values from the arguments.
+	std::string fileName = result["file"].as<std::string>();
+	int imageWidth = result["width"].as<int>();
+
+    // Checking if the file provided exists.
+	if (!fileExists(fileName)) {
+		printf("[Medusa] %s does not exist!", fileName.c_str());
+	}
+
+	// Reading the image provided as we know it exists.
+	cv::Mat image = cv::imread(fileName, cv::IMREAD_COLOR);
+
+    resize(&image, imageWidth);
     grayify(&image);
     std::vector<std::string> pixels = getPixels(&image);
-    writeToFile(pixels, "image");
+    writeToFile(pixels, "image", imageWidth);
 
     return 0;
 }
